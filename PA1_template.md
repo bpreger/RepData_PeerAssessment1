@@ -22,12 +22,11 @@ We then begin the assignment proper by downloading the file containing the data:
 
 
 ```r
-read.dataset <- function() {
         zip.filename <- "./repdata-data-activity.zip"
         txt.filename <- "./activity.csv"
         if (!file.exists(txt.filename)) {
                 if (!file.exists(zip.filename)) {
-                        download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip",
+                        download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip",destfile="repdata-data-activity.zip",
                                       method="curl")
                         if (file.exists(zip.filename)) {
                                 unzip(zip.filename)     
@@ -36,7 +35,6 @@ read.dataset <- function() {
                         unzip(zip.filename)
                 }
         }
-}
 ```
 
 Then, we load and pre-process the data:
