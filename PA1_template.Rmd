@@ -105,38 +105,33 @@ To calculate the missing values, we use multiple imputation with the Amelia
 package. This process draws upon the previous data as well as the uncertainty
 around it to average the outcomes.
 
-To make it easier for the Amelia package, both date and time were converted to
-PosixCt
+We then set the boundary for steps so that Amelia does not input a negative
+value for steps and that it does not use a higher value than the data set uses, then run the function. 3 imputations are used (the minimum
+value, for ease of use) and time is set as as squared effects  with polytime. The interval is also set as a cross-sectional variable since steps vary by
 ```{r}
-z2<- z
-z2$interval<- as.character(z2$interval)
-z2$datetime<- paste(z2$date,z2$interval,sep=" ")
-z2$datetime<- ymd_hm(z2$datetime)
-z2<- z2[,c(1,4)]
+zmax<- z$steps[!is.na(z$steps)]
+bds <- matrix(c(1, 0, max(zmax)), nrow = 1, ncol = 3)
 ```
 
-We then set the boundary for steps so that Amelia does not input a negative
-value for steps, then run the function. 3 imputations are used (the minimum
-value, for ease of use) and time is set as a linear variable with polytime.
-```{r}
-bds <- matrix(c(1, 0, Inf), nrow = 1, ncol = 3)
-test<- amelia(z2,m=3, ts="datetime",polytime=1, bound = bds)
+3 imputations are used (the minimum
+value, for ease of use) and time is set as as squared effects  with polytime. The interval is also set as a cross-sectional variable since the amount of steps varies by time.
+```{r,cache=TRUE}
+test<- amelia(z,m=3, ts="date",cs="interval",intercs=TRUE,bound = bds,empri=0.01 * nrow(z),ncpus=2)
 ```
 
 Usually with multiple imputation, a researcher would analyze each data set
-individually. Because of this assignment and because it is only a single
-variable with missing information, we will simply average the results
+individually. Because of the instructions for this assignment and because it is only a single variable with missing information, we will simply average the results.
 
-Since the original values were already input, their averages are the same
+Since the original values were already inputed, their averages are the same
 as the initial values
-```{r}
+```{r,cache=TRUE}
 write.amelia(test,separate=TRUE,"test",".csv")
 test1<- read.csv("test1.csv")
 test2<- read.csv("test2.csv")
 test3<- read.csv("test3.csv")
 test4<- merge(test1,test2,by="X")
 test4<- merge(test4,test3,by="X")
-ameliasheet<- test4[,c(2,4,6)]
+ameliasheet<- test4[,c(2,5,8)]
 ameliasheet$steps2<- rowSums(ameliasheet)
 ameliasheet$stepsfinal= round(ameliasheet$steps2/3,0)
 ```
@@ -171,9 +166,8 @@ And the median for the data:
 median(agg3$steps)
 ```
 
-Overall, we can see that the means and medians for the imputed data are higher.
-This makes sense as the average value per day is greater than 0, and the
-imputed data counterbalances some days having stp values close to zero.
+Overall, we can see that the means and median values for the imputed data are higher than the originals.
+
 
 Finally, we test if there is a difference in activity between weekdays and 
 weekends. This is first done by classifying data as weekday or weekend.
